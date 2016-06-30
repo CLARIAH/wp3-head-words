@@ -21,29 +21,23 @@ names(df) <- tolower(names(df))
 # abstract relevant columns and in requested order
 df2 <- df[, c(3, 2, 4, 5, 10)]
 
+## Second go at deriving head words
 
-# Very first and simplistic go add finding occupational head words
+df2$occSplit <- strsplit(df2$standard, " ") # seperate words
 
-# rule 1: remove add words
+# remove add words
+df2$occSplit <- lapply(df2$occSplit, function(x) {
+    badvec <- c("de", "het", "een", "van", "bij", "uit", "voor", "niet",
+                "eerste", "tweede", "derde", "vierde", "vijfde", 
+                "beroepstitel", "vermeld", "interpreteerbaar", "overgenomen")
+    sapply(x, function(y) {
+        ifelse(y %in% badvec, y <- NA, y)
+    })
+})
 
-rmbad <- function(x) {
-    badvec <- c(" de", " het", " een", " van", " bij", " uit", " voor", "niet ",
-                "eerste ", "tweede ", "derde ", "vierde ", "vijfde ", 
-                "beroepstitel ", " vermeld", "interpreteerbaar", "overgenomen")
-    subvec <- paste0(badvec, collapse = "|")
-    gsub(subvec, "", x)
-}
+# get the first word
+df2$head <- sapply(df2$occSplit, "[[", 1)
 
-df2$good <- sapply(df2$standard, rmbad)
-#View(df2)
-
-# rule 2: get the first word
-
-fword <- function(x) {
-    gsub(' [A-z ]*', '' , x)
-}
-
-df2$head <- sapply(df2$good, fword)
 
 # removing any spaces
 trim <- function (x) gsub("^\\s+|\\s+$", "", x)
@@ -51,10 +45,9 @@ trim <- function (x) gsub("^\\s+|\\s+$", "", x)
 df2$head <- trim(df2$head)
 
 
-str(df2$head)
 
 ## Writing out to file
-df3 <- df2[, c(7,1,3,5)]
+df3 <- df2[, c(1,3,5)]
 # View(df3)
 
 write.csv(x = df3, "./data/derived/hsn_headword.csv", row.names = FALSE)
