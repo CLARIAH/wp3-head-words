@@ -47,7 +47,8 @@ df2$head <- trim(df2$head)
 
 
 ## Writing out to file
-df3 <- df2[, c(1,3,5)]
+names(df2)
+df3 <- df2[, c(7,1,3,5)]
 # View(df3)
 
 write.csv(x = df3, "./data/derived/hsn_headword.csv", row.names = FALSE)
